@@ -1,10 +1,8 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+
 import java.util.concurrent.TimeUnit;
 
 
@@ -13,15 +11,21 @@ public class BasicSeleniumTesting {
     private static WebDriver driver;
 
     @BeforeClass
-    public static void setup(){
+    public static void setupClass() {
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
-        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
     }
 
-    @AfterClass
-    public static void setdown(){
-        driver.close();
+    @Before
+    public void setupTest() {
+        driver = new ChromeDriver();
+        driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+    }
+
+    @After
+    public void teardown() {
+        if (driver != null) {
+            driver.quit();
+        }
     }
 
     @Test
