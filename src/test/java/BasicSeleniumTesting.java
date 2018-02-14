@@ -1,15 +1,14 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
+import logic.config.DefaultVariables;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.junit.*;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Cookie;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.fail;
 
 public class BasicSeleniumTesting {
 
@@ -54,7 +53,7 @@ public class BasicSeleniumTesting {
         Assert.assertEquals("Google", title);
     }
 
-    @Test
+    //@Test
     public void getToOlpClickNotebookAndWaitForLoad() throws InterruptedException {
         //go first so cookie can be set
         driver.get(zeppelinUrl);
@@ -79,6 +78,58 @@ public class BasicSeleniumTesting {
         String title = driver.getTitle();
 
         Assert.assertEquals("Build a Graph", title);
+
+
+    }
+
+    @Test
+    public void logIntoOLP(){
+        WebElement element = null;
+        try {
+            driver.get(DefaultVariables.OLP_STAGING);
+
+        element = driver.findElement(By.xpath("//*[@id=\"button-sign-in\"]"));
+
+        } catch (NoSuchElementException e){
+            System.out.print("staging olp is down");
+            fail();
+        }
+        element.click();
+        driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
+
+        /*
+        WebElement emailBox = driver.findElement(By.xpath("//*[@id=\"sign-in-email\"]"));
+        WebElement realmBox = driver.findElement(By.xpath("//*[@id=\"realm-input\"]"));
+        WebElement passwordBox = driver.findElement(By.xpath("//*[@id=\"sign-in-password-encrypted\"]"));
+
+        emailBox.sendKeys("some text");
+        realmBox.sendKeys("sometest 2");
+        passwordBox.sendKeys("halp");
+
+        */
+        try{
+            driver.findElement(By.className("sign-in-email"));
+        }catch (NoSuchElementException e){
+            System.out.print("not by className");
+        }
+
+        try{
+            driver.findElement(By.id("sign-in-email"));
+        }catch (NoSuchElementException e){
+            System.out.print("not by id");
+        }
+
+        try{
+            driver.findElement(By.name("sign-in-email"));
+        }catch (NoSuchElementException e){
+            System.out.print("not by name");
+        }
+
+        try{
+            driver.findElement(By.tagName("sign-in-email"));
+        }catch (NoSuchElementException e){
+            System.out.print("not by tagName");
+        }
 
 
     }
