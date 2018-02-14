@@ -39,7 +39,7 @@ public class BasicSeleniumTesting {
     }
 
     @Test
-    public void getToOlp() throws InterruptedException {
+    public void getToOlpDemoWithCookieAndCheckNotebook14() throws InterruptedException {
         //go first so cookie can be set
         driver.get("https://zepp-dev.analytics.in.here.com/#/");
 
@@ -58,6 +58,7 @@ public class BasicSeleniumTesting {
         driver.findElement(By.xpath("//*[@id=\"20171212-135643_27552144_container\"]"));
         String title = driver.getTitle();
 
+        //finally the fkin assert
         Assert.assertEquals("Build a Graph", title);
 
 
