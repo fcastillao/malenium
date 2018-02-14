@@ -16,6 +16,7 @@ public class BasicSeleniumTesting {
     private static WebDriver driver;
     private String cookieName;
     private String cookieValue;
+    private String zeppelinUrl;
 
     @BeforeClass
     public static void setupClass() {
@@ -31,9 +32,12 @@ public class BasicSeleniumTesting {
         //load configurations
         PropertiesConfiguration config = new PropertiesConfiguration();
         config.load("application.properties");
+
         cookieName = config.getString("cookieName");
-        if (cookieName.equals("placeYourCookieNameHere"))throw new ConfigurationException("cookie not setted up");
         cookieValue = config.getString("cookieValue");
+        zeppelinUrl = config.getString("zeppelinUrl");
+
+        if (cookieName.isEmpty() || cookieValue.isEmpty()|| zeppelinUrl.isEmpty())throw  new ConfigurationException("parameter values setted incorrectly");
     }
 
     @After
@@ -53,14 +57,14 @@ public class BasicSeleniumTesting {
     @Test
     public void getToOlpClickNotebookAndWaitForLoad() throws InterruptedException {
         //go first so cookie can be set
-        driver.get("https://zepp-dev.analytics.in.here.com/#/");
+        driver.get(zeppelinUrl);
 
         //manually set cookie
         Cookie cookie1 = new Cookie(cookieName, cookieValue);
         driver.manage().addCookie(cookie1);
 
         //go again with the aut cookie
-        driver.get("https://zepp-dev.analytics.in.here.com/#/");
+        driver.get(zeppelinUrl);
 
         //get 14 notebook and click it
         //WebElement element = driver.findElement(By.xpath("//*[@id=\"notebook-names\"]/div/li[]/div/div/a[1]"));
