@@ -1,6 +1,5 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
 import logic.config.DefaultVariables;
-import org.apache.commons.configuration.ConfigurationException;
 import org.junit.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -20,7 +19,7 @@ public class BasicSeleniumTesting {
     }
 
     @Before
-    public void setupTest() throws ConfigurationException {
+    public void setupTest() {
         driver = new ChromeDriver();
         //this is how much time should we wait for a element to be loaded
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
@@ -91,13 +90,24 @@ public class BasicSeleniumTesting {
 
         //olp uses an iFrame, so we must switch to it
         driver.switchTo().frame("here-account-sdk");
+        /*
+        the thing with iFrames:
+            html document is parsed in its entirety most of the time, but when an iFrame is detected it is parsed
+            independently, (it has its own DOM!!) and as such the driver is unable to find any elements in the iFrame
+            to work with this, you have to switch to this iFrame (using for example its ID) and then you will be able
+            to query its elements as if you were in the parent DOM.
+
+        to keep in mind:
+            once you finish working with that iFrame (because you need to go up or because the page changed,
+            remember to switch back in the driver too)
+         */
 
         //find the respective text areas
         WebElement emailBox = driver.findElement(By.xpath("//*[@id=\"sign-in-email\"]"));
         WebElement realmBox = driver.findElement(By.xpath("//*[@id=\"realm-input\"]"));
         WebElement passwordBox = driver.findElement(By.xpath("//*[@id=\"sign-in-password-encrypted\"]"));
 
-        //input the text
+        //input the text into the text fields
         emailBox.sendKeys(DefaultVariables.OLP_EMAIL);
         realmBox.sendKeys(DefaultVariables.OLP_REALM);
         passwordBox.sendKeys(DefaultVariables.OLP_PASSWORD);
@@ -109,14 +119,14 @@ public class BasicSeleniumTesting {
         //since previous iframe is dead, back to default
         driver.switchTo().defaultContent();
 
-        //there is this acceptance button
+        //there is this useful acceptance button that indicates that the page loaded
         driver.findElement(By.id("testing-notice-agree"));
 
         //get the cookies obtained on login
         Set<Cookie> cookies = driver.manage().getCookies();
-        boolean cookieGotten = false;
 
-        //look for the access cookie, pass if found
+        //look for the access cookie, pass test if found
+        boolean cookieGotten = false;
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals("here_access_st")) cookieGotten = true;
         }
