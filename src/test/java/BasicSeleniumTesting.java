@@ -23,7 +23,7 @@ public class BasicSeleniumTesting {
     public void setupTest() throws ConfigurationException {
         driver = new ChromeDriver();
         //this is how much time should we wait for a element to be loaded
-        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     }
 
     @After
@@ -33,14 +33,14 @@ public class BasicSeleniumTesting {
         }
     }
 
-    //@Test
+    @Test
     public void getToGoogle(){
         driver.get("http://www.google.com");
         String title = driver.getTitle();
         Assert.assertEquals("Google", title);
     }
 
-    //@Test
+    @Test
     public void getToOlpClickNotebookAndWaitForLoad() throws InterruptedException {
         //go first so cookie can be set
         driver.get(DefaultVariables.ZEPPELIN_URL);
@@ -57,8 +57,14 @@ public class BasicSeleniumTesting {
 
         //search for a link with text
         //get the notebook called Build a Graph and click it
-        WebElement element = driver.findElement(By.xpath("//a[contains(., 'Build a Graph')]"));
-        element.click();
+        try {
+            WebElement element = driver.findElement(By.xpath("//a[contains(., 'Build a Graph')]"));
+            element.click();
+        } catch (NoSuchElementException e) {
+            System.out.println("the Build a Graph notebook was not found in zeppelin");
+            System.out.println("check that the cookie is valid");
+            fail();
+        }
 
         //wait for page to load and get title
         driver.findElement(By.xpath("//*[@id=\"20171212-135643_27552144_container\"]"));
