@@ -1,4 +1,6 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.junit.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
@@ -12,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 public class BasicSeleniumTesting {
 
     private static WebDriver driver;
+    private String cookieName;
+    private String cookieValue;
 
     @BeforeClass
     public static void setupClass() {
@@ -19,9 +23,17 @@ public class BasicSeleniumTesting {
     }
 
     @Before
-    public void setupTest() {
+    public void setupTest() throws ConfigurationException {
         driver = new ChromeDriver();
+        //this is how much time should we wait for a element to be loaded
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+        //load configurations
+        PropertiesConfiguration config = new PropertiesConfiguration();
+        config.load("application.properties");
+        cookieName = config.getString("cookieName");
+        if (cookieName.equals("placeYourCookieNameHere"))throw new ConfigurationException("cookie not setted up");
+        cookieValue = config.getString("cookieValue");
     }
 
     @After
@@ -31,7 +43,7 @@ public class BasicSeleniumTesting {
         }
     }
 
-    @Test
+    //@Test
     public void getToGoogle(){
         driver.get("http://www.google.com");
         String title = driver.getTitle();
@@ -39,19 +51,23 @@ public class BasicSeleniumTesting {
     }
 
     @Test
-    public void getToOlp() throws InterruptedException {
+    public void getToOlpClickNotebookAndWaitForLoad() throws InterruptedException {
         //go first so cookie can be set
         driver.get("https://zepp-dev.analytics.in.here.com/#/");
 
         //manually set cookie
-        Cookie cookie1 = new Cookie(HereCookie.getInstance().getName(), HereCookie.getInstance().getValue());
+        Cookie cookie1 = new Cookie(cookieName, cookieValue);
         driver.manage().addCookie(cookie1);
 
         //go again with the aut cookie
         driver.get("https://zepp-dev.analytics.in.here.com/#/");
 
         //get 14 notebook and click it
-        WebElement element = driver.findElement(By.xpath("//*[@id=\"notebook-names\"]/div/li[14]/div/div/a[1]"));
+        //WebElement element = driver.findElement(By.xpath("//*[@id=\"notebook-names\"]/div/li[]/div/div/a[1]"));
+
+        //search for a link with text
+        //get the notebook called Build a Graph and click it
+        WebElement element = driver.findElement(By.xpath("//a[contains(., 'Build a Graph')]"));
         element.click();
 
         //wait for page to load and get title
