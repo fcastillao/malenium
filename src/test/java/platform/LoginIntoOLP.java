@@ -17,10 +17,25 @@ public class LoginIntoOLP {
         browserUtility.clickOnElement("//*[@id=\"button-sign-in\"]");
     }
 
-    @Then("^fill the login inputs$")
+    @Then("^i fill the login inputs$")
     public void fillTheLoginInputs() throws Throwable {
+        browserUtility.driverSwitch("here-account-sdk");
         browserUtility.inputTextInFieldById(DefaultVariables.OLP_EMAIL, "sign-in-email");
         browserUtility.inputTextInFieldById(DefaultVariables.OLP_REALM, "realm-input");
         browserUtility.inputTextInFieldById(DefaultVariables.OLP_PASSWORD, "sign-in-password-encrypted");
     }
+
+    @Then("^i click the sign in button$")
+    public void clickTheSignInButton() throws Throwable {
+        browserUtility.clickOnElement("//*[@id=\"signInBtn\"]");
+        browserUtility.driverSwitchDefault();
+        browserUtility.waitForPageToLoad();
+    }
+
+    @Then("^I should be logged correctly$")
+    public void confirmThatILoggedInCorreclty() throws Throwable {
+        browserUtility.findElementById("testing-notice-agree");
+        browserUtility.tearDown();
+    }
+
 }

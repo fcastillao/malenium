@@ -7,7 +7,6 @@ import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-
 import java.util.concurrent.TimeUnit;
 
 public class BrowserUtility {
@@ -18,7 +17,7 @@ public class BrowserUtility {
         init();
     }
 
-    public void init() {
+    private void init() {
         driver = new ChromeDriver();
         //this is how much time should we wait for a element to be loaded
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
@@ -41,8 +40,17 @@ public class BrowserUtility {
         return driver.getTitle();
     }
 
+    /**
+     * making this search for a nonexistent class will force the waiting,
+     * also catching the exception to prevent the test stop
+     */
     public void waitForPageToLoad() {
-        driver.findElement(By.className("ace_content"));
+
+        try {
+            driver.findElement(By.className("some nonexistent class name"));
+        } catch (Exception ignored) {
+
+        }
     }
 
     @After
@@ -59,5 +67,21 @@ public class BrowserUtility {
     public void inputTextInFieldById(String text, String elementClass) {
         WebElement element = driver.findElement(By.id(elementClass));
         element.sendKeys(text);
+    }
+
+    public void driverSwitch(String frameId) {
+        driver.switchTo().frame(frameId);
+    }
+
+    public void driverSwitchDefault() {
+        driver.switchTo().defaultContent();
+    }
+
+    public void findElementByXpath(String elementXpath) {
+        driver.findElement(By.xpath(elementXpath));
+    }
+
+    public void findElementById(String elementId) {
+        driver.findElement(By.id(elementId));
     }
 }
