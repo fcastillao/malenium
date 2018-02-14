@@ -1,11 +1,11 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
 import logic.config.DefaultVariables;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.junit.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.fail;
@@ -13,9 +13,6 @@ import static org.junit.Assert.fail;
 public class BasicSeleniumTesting {
 
     private static WebDriver driver;
-    private String cookieName;
-    private String cookieValue;
-    private String zeppelinUrl;
 
     @BeforeClass
     public static void setupClass() {
@@ -26,17 +23,7 @@ public class BasicSeleniumTesting {
     public void setupTest() throws ConfigurationException {
         driver = new ChromeDriver();
         //this is how much time should we wait for a element to be loaded
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-
-        //load configurations
-        PropertiesConfiguration config = new PropertiesConfiguration();
-        config.load("application.properties");
-
-        cookieName = config.getString("cookieName");
-        cookieValue = config.getString("cookieValue");
-        zeppelinUrl = config.getString("zeppelinUrl");
-
-        if (cookieName.isEmpty() || cookieValue.isEmpty()|| zeppelinUrl.isEmpty())throw  new ConfigurationException("parameter values setted incorrectly");
+        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
     }
 
     @After
@@ -56,14 +43,14 @@ public class BasicSeleniumTesting {
     //@Test
     public void getToOlpClickNotebookAndWaitForLoad() throws InterruptedException {
         //go first so cookie can be set
-        driver.get(zeppelinUrl);
+        driver.get(DefaultVariables.ZEPPELIN_URL);
 
         //manually set cookie
-        Cookie cookie1 = new Cookie(cookieName, cookieValue);
+        Cookie cookie1 = new Cookie(DefaultVariables.AUTHORIZATION_COOKIE, DefaultVariables.AUTHORIZATION_COOKIE_VALUE);
         driver.manage().addCookie(cookie1);
 
         //go again with the aut cookie
-        driver.get(zeppelinUrl);
+        driver.get(DefaultVariables.ZEPPELIN_URL);
 
         //get 14 notebook and click it
         //WebElement element = driver.findElement(By.xpath("//*[@id=\"notebook-names\"]/div/li[]/div/div/a[1]"));
@@ -79,59 +66,56 @@ public class BasicSeleniumTesting {
 
         Assert.assertEquals("Build a Graph", title);
 
-
     }
 
     @Test
     public void logIntoOLP(){
-        WebElement element = null;
-        try {
-            driver.get(DefaultVariables.OLP_STAGING);
+        WebElement signInButton;
 
-        element = driver.findElement(By.xpath("//*[@id=\"button-sign-in\"]"));
+        try {
+            //staging olp has been unstable, lets use a try for this
+            driver.get(DefaultVariables.OLP_STAGING);
+            signInButton = driver.findElement(By.xpath("//*[@id=\"button-sign-in\"]"));
+            signInButton.click();
 
         } catch (NoSuchElementException e){
             System.out.print("staging olp is down");
             fail();
         }
-        element.click();
-        driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
 
-        /*
+        //olp uses an iFrame, so we must switch to it
+        driver.switchTo().frame("here-account-sdk");
+
+        //find the respective text areas
         WebElement emailBox = driver.findElement(By.xpath("//*[@id=\"sign-in-email\"]"));
         WebElement realmBox = driver.findElement(By.xpath("//*[@id=\"realm-input\"]"));
         WebElement passwordBox = driver.findElement(By.xpath("//*[@id=\"sign-in-password-encrypted\"]"));
 
-        emailBox.sendKeys("some text");
-        realmBox.sendKeys("sometest 2");
-        passwordBox.sendKeys("halp");
+        //input the text
+        emailBox.sendKeys(DefaultVariables.OLP_EMAIL);
+        realmBox.sendKeys(DefaultVariables.OLP_REALM);
+        passwordBox.sendKeys(DefaultVariables.OLP_PASSWORD);
 
-        */
-        try{
-            driver.findElement(By.className("sign-in-email"));
-        }catch (NoSuchElementException e){
-            System.out.print("not by className");
+        //actually and finally log in
+        WebElement sigInButton = driver.findElement(By.xpath("//*[@id=\"signInBtn\"]"));
+        sigInButton.click();
+
+        //since previous iframe is dead, back to default
+        driver.switchTo().defaultContent();
+
+        //there is this acceptance button
+        driver.findElement(By.id("testing-notice-agree"));
+
+        //get the cookies obtained on login
+        Set<Cookie> cookies = driver.manage().getCookies();
+        boolean cookieGotten = false;
+
+        //look for the access cookie, pass if found
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("here_access_st")) cookieGotten = true;
         }
 
-        try{
-            driver.findElement(By.id("sign-in-email"));
-        }catch (NoSuchElementException e){
-            System.out.print("not by id");
-        }
-
-        try{
-            driver.findElement(By.name("sign-in-email"));
-        }catch (NoSuchElementException e){
-            System.out.print("not by name");
-        }
-
-        try{
-            driver.findElement(By.tagName("sign-in-email"));
-        }catch (NoSuchElementException e){
-            System.out.print("not by tagName");
-        }
-
-
+        Assert.assertTrue(cookieGotten);
     }
 
 }
