@@ -14,7 +14,13 @@ public class LoginIntoOLP {
         browserUtility = new BrowserUtility();
 
         browserUtility.goToURL(DefaultVariables.OLP_STAGING);
-        browserUtility.clickOnElement("//*[@id=\"button-sign-in\"]");
+        try {
+            browserUtility.clickOnElement("//*[@id=\"button-sign-in\"]");
+        } catch (Exception ignored) {
+            System.out.println("sign in button not found. verify the VPN connection to the here network");
+            browserUtility.tearDown();
+            throw new Exception();
+        }
     }
 
     @Then("^i fill the login inputs$")
